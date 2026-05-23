@@ -24,8 +24,127 @@ model User {
   streak_days Int? @default(0)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  groups Group[]
+  groupMembers GroupMembers[]
+  challengesAsChallenger Challenges[] @relation("ChallengerChallenges")
+  challengesAsOpponent Challenges[] @relation("OpponentChallenges")
+  challengesWon Challenges[] @relation("WonChallenges")
+
+  labReports LabReports[]
+  bioMarkers BioMarkers[]
 }
 
+model LabReports {
+  id String @id @default(uuid())
+  user_id String 
+  user     User   @relation(fields: [user_id], references: [id])
+  pdf_url String
+  lab_name String
+  report_date DateTime
+  status ReportStatus
+  ai_summary String?
+  bioscore Float?
+  created_at DateTime @default(now())
+
+  bioMarkers BioMarkers[]
+}
+
+model BioMarkers {
+  id String @id @default(uuid())
+  report_id String
+  report LabReports @relation(fields: [report_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  name String
+  value Float
+  unit String
+  ref_range_low Float?
+  ref_range_high Float?
+  flag BioMarkerFlag?
+  functionality_flag FunctionalityFlag?
+  panel String?
+  confidence Float?
+  manually_edited Boolean? @default(false)
+  created_at DateTime @default(now())
+}
+
+model Group {
+  id String @id @default(uuid())
+  name String
+  invite_code String @unique
+  owner_id String
+  owner User @relation(fields: [owner_id], references: [id])
+  created_at DateTime @default(now())
+  members GroupMembers[]
+}
+model GroupMembers {
+  group_id String 
+  group Group @relation(fields: [group_id], references: [id])
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  visibility GroupVisibility
+  created_at DateTime @default(now())
+  @@id([group_id, user_id])
+}
+
+model Challenges {
+  id String @id @default(uuid())
+  challenger_id String 
+  challenger User @relation("ChallengerChallenges", fields: [challenger_id], references: [id])
+  opponent_id String 
+  opponent User @relation("OpponentChallenges", fields: [opponent_id], references: [id])
+  biomarker_name String 
+  metric ChallengeMetric
+  target_value Float
+  deadline DateTime
+  status ChallengeStatus
+  winner_id String?
+  winner User? @relation("WonChallenges", fields: [winner_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+}
+
+enum ChallengeMetric {
+  ABSOLUTE_IMPROVEMENT
+  TARGET_RANGE
+  PERFECT_IMPROVEMENT
+
+}
+enum ChallengeStatus {
+  PENDING
+  ACTIVE
+  AWAITING_EVIDENCE
+  JUDGED
+  CANCELLED
+}
+
+enum GroupVisibility {
+  FULL
+  SCORE_ONLY
+  ANONYMOUS
+}
+enum FunctionalityFlag {
+  OPTIMAL
+  SUBOPTIMAL
+  CONCERNING
+}
+
+enum BioMarkerFlag {
+  LOW
+  NORMAL
+  HIGH 
+  CRITICALLY_LOW
+  CRITICALLY_HIGH
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEW
+  CONFIRMED 
+  FAILED
+}
 enum Gender {
   MALE
   FEMALE
