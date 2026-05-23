@@ -1,0 +1,19 @@
+{
+  "name": "api",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "uuid": "^14.0.0",
+    "jose": "^6.2.3",
+    "@types/express": "^5.0.6",
+    "bcrypt": "^6.0.0"
+  }
+}
